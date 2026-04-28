@@ -55,7 +55,7 @@ function ChatUI() {
         setChat((prev) => [...prev, { sender: "ai", message: data.message.replace(/^\n\n/, "") }]);
       } else {
          console.error("No message in response", data);
-         setChat((prev) => [...prev, { sender: "ai", message: "hallucination error" }]);
+         setChat((prev) => [...prev, { sender: "ai", message: "Too large for a task to generate" }]);
       }
     },
     onError: (error) => {
