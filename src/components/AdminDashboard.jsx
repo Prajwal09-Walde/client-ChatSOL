@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
 const AdminDashboard = () => {
   const [activities, setActivities] = useState([]);
@@ -15,7 +16,7 @@ const AdminDashboard = () => {
           return;
         }
 
-        const res = await fetch("http://localhost:3080/api/auth/activities", {
+        const res = await fetch(`${API_URL}/api/auth/activities`, {
           headers: {
             "Authorization": `Bearer ${token}`
           }

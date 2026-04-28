@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useMutation } from 'react-query'
 import { useNavigate } from 'react-router-dom'
 import { fetchResponse } from '../api'
+import { API_URL } from '../config'
 import ChatInput from './ChatInput'
 import Chatbody from './Chatbody'
 
@@ -78,7 +79,7 @@ function ChatUI() {
     e.preventDefault();
     setSettingsMessage("");
     try {
-      const res = await fetch("http://localhost:3080/api/auth/update-settings", {
+      const res = await fetch(`${API_URL}/api/auth/update-settings`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",

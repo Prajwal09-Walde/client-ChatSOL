@@ -1,8 +1,10 @@
+import { API_URL } from './config';
+
 export const fetchResponse = async(chat) => {
     try {
         const token = localStorage.getItem("token");
 
-        const response = await fetch("http://localhost:3080/", {
+        const response = await fetch(`${API_URL}/`, {
              method: 'POST',
              headers: {
                 "Content-Type": "application/json",
