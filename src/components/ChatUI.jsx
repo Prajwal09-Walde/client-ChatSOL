@@ -55,12 +55,12 @@ function ChatUI() {
         setChat((prev) => [...prev, { sender: "ai", message: data.message.replace(/^\n\n/, "") }]);
       } else {
          console.error("No message in response", data);
-         setChat((prev) => [...prev, { sender: "ai", message: "Error: " + (data.error || "Failed to generate response") }]);
+         setChat((prev) => [...prev, { sender: "ai", message: "hallucination error" }]);
       }
     },
     onError: (error) => {
        console.error("Mutation error", error);
-       setChat((prev) => [...prev, { sender: "ai", message: "Error communicating with server." }]);
+       setChat((prev) => [...prev, { sender: "ai", message: "hallucination error" }]);
     }
   });
 
