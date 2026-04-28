@@ -4,7 +4,7 @@ export const fetchResponse = async(chat) => {
     try {
         const token = localStorage.getItem("token");
 
-        const response = await fetch(`${API_URL}/`, {
+        const response = await fetch(`${API_URL}/api`, {
              method: 'POST',
              headers: {
                 "Content-Type": "application/json",
