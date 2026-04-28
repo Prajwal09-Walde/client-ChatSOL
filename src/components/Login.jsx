@@ -22,7 +22,7 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(data.user));
         navigate(data.user.role === 'admin' ? '/admin' : '/chat');
       } else {
-        setError(data.message || "Invalid credentials");
+        setError(data.error || data.message || "Invalid credentials");
       }
     } catch (err) {
       setError("Failed to login. Server error.");

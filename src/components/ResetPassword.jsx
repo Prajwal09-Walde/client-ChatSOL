@@ -33,7 +33,7 @@ const ResetPassword = () => {
         setMessage("Password has been successfully reset. Redirecting to login...");
         setTimeout(() => navigate('/login'), 3000);
       } else {
-        setError(data.message || "Failed to reset password. The token may be invalid or expired.");
+        setError(data.error || data.message || "Failed to reset password. The token may be invalid or expired.");
       }
     } catch (err) {
       setError("Server error. Please try again later.");

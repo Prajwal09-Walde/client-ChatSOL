@@ -31,7 +31,7 @@ const AdminDashboard = () => {
         if (res.ok) {
           setActivities(data);
         } else {
-          setError(data.message || "Failed to fetch activities");
+          setError(data.error || data.message || "Failed to fetch activities");
         }
       } catch (err) {
         setError("Server error while fetching activities.");
@@ -49,8 +49,8 @@ const AdminDashboard = () => {
 
   return (
     <div className="bg-[#101035] min-h-screen text-white p-4 sm:p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6 sm:mb-8 border-b border-white/20 pb-4">
+      <div className="max-w-6xl mx-auto relative">
+        <div className="sticky top-0 z-50 flex justify-between items-center mb-6 sm:mb-8 border-b border-white/20 pb-4 pt-4 bg-[#101035]/90 backdrop-blur-md -mx-4 px-4 sm:mx-0 sm:px-0">
           <h1 className="text-2xl sm:text-3xl font-bold head">Admin Dashboard</h1>
           <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</button>
         </div>

@@ -25,7 +25,7 @@ const ForgotPassword = () => {
       if (res.ok) {
         setMessage("A password reset link has been sent to your email.");
       } else {
-        setError(data.message || "Failed to send reset link.");
+        setError(data.error || data.message || "Failed to send reset link.");
       }
     } catch (err) {
       setError("Server error. Please try again later.");

@@ -23,7 +23,7 @@ const Signup = () => {
         localStorage.setItem("user", JSON.stringify(data.user));
         navigate('/chat');
       } else {
-        setError(data.message || "Failed to sign up");
+        setError(data.error || data.message || "Failed to sign up");
       }
     } catch (err) {
       setError("Failed to sign up. Server error.");

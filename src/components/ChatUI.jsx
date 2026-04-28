@@ -111,7 +111,7 @@ function ChatUI() {
   };
 
   return (
-    <div className={`${themeClasses[theme] || themeClasses.dark} h-screen py-6 relative sm:px-16
+    <div className={`${themeClasses[theme] || themeClasses.dark} h-[100dvh] py-4 sm:py-6 relative sm:px-16
      px-4 overflow-hidden flex flex-col justify-between align-middle transition-colors duration-300`}>
 
       {/* gradient */}
@@ -121,8 +121,8 @@ function ChatUI() {
       <div className="gradient-04 z-0 absolute"></div>
 
       {/* header */}
-      <div className="relative z-10 flex justify-between items-center mb-3">
-        <div className="uppercase font-bold text-2xl head">
+      <div className="relative z-50 flex justify-between items-center mb-4 p-3 -mt-2 -mx-2 sm:mx-0 sm:mt-0 rounded-2xl backdrop-blur-md bg-white/5 border border-white/10 shadow-sm">
+        <div className="uppercase font-bold text-2xl head ml-2">
           ChatSOL
         </div>
         <div className="flex items-center gap-4 relative" ref={dropdownRef}>
