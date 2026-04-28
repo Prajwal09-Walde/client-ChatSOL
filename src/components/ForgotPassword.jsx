@@ -39,7 +39,7 @@ const ForgotPassword = () => {
       <div className="gradient-01 z-0 absolute"></div>
       <div className="gradient-02 z-0 absolute"></div>
       
-      <div className="z-10 bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20">
+      <div className="z-10 bg-white/10 backdrop-blur-md p-6 sm:p-8 mx-4 sm:mx-0 rounded-2xl shadow-2xl w-full sm:max-w-md border border-white/20">
         <h2 className="text-3xl font-bold text-center mb-2 head">Reset Password</h2>
         <p className="text-center text-sm text-white/70 mb-6">Enter your email to receive a reset link</p>
         

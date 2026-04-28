@@ -156,11 +156,11 @@ function ChatUI() {
 
 
       {/* body */}
-      <div className="h-[90%] overflow-auto w-full max-w-4xl min-w-[20rem] py-8 px-4 self-center z-10
+      <div className="h-[90%] overflow-auto w-full max-w-4xl py-8 px-2 sm:px-4 self-center z-10
       scrollbar-thumb-slate-400 scrollbar-thin scrollbar-track-gray-transparent scrollbar-thumb-border-rounded-md flex flex-col">
         {chat.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
-            <h1 className="text-3xl md:text-5xl font-bold opacity-80 text-center leading-relaxed">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold opacity-80 text-center leading-relaxed">
               Hello {user?.name},<br/> how can I help you?
             </h1>
           </div>
@@ -172,13 +172,13 @@ function ChatUI() {
 
 
       {/* input */}
-      <div className="w-full max-w-4xl min-w-[20rem] self-center z-10">
+      <div className="w-full max-w-4xl self-center z-10 px-2 sm:px-0">
         <ChatInput sendMessage={sendMessage} loading={mutation.isLoading} theme={theme}/>
       </div>
 
       {/* Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center backdrop-blur-sm p-4">
           <div className="bg-[#101035] border border-white/20 p-6 rounded-xl w-full max-w-md shadow-2xl relative">
             <h2 className="text-2xl font-bold mb-4">Settings</h2>
             {settingsMessage && <div className="bg-blue-500/20 text-blue-200 p-2 rounded mb-4 text-center">{settingsMessage}</div>}

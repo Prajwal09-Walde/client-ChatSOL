@@ -47,7 +47,7 @@ const ResetPassword = () => {
       <div className="gradient-01 z-0 absolute"></div>
       <div className="gradient-02 z-0 absolute"></div>
       
-      <div className="z-10 bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20">
+      <div className="z-10 bg-white/10 backdrop-blur-md p-6 sm:p-8 mx-4 sm:mx-0 rounded-2xl shadow-2xl w-full sm:max-w-md border border-white/20">
         <h2 className="text-3xl font-bold text-center mb-6 head">Create New Password</h2>
         
         {error && <div className="bg-red-500/20 border border-red-500 text-red-100 p-3 rounded mb-4 text-sm text-center">{error}</div>}
