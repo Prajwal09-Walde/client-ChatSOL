@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const ChatInput = ({ sendMessage, loading }) => {
+const ChatInput = ({ sendMessage, loading, theme }) => {
 
   const [value, setValue] = useState("");
 
@@ -9,12 +9,15 @@ const ChatInput = ({ sendMessage, loading }) => {
     sendMessage({ sender: "user", message: value })
     setValue("");
   };
+
+  const bgClass = theme === 'light' ? 'bg-black/10' : 'bg-white/10';
+  const filterClass = theme === 'light' ? 'invert opacity-70' : '';
+
   return (
-    <div className='w-full bg-white bg-opacity-10 max-h-40 rounded-lg px-4
-    py-4 overflow-auto relative'>
+    <div className={`w-full max-h-40 rounded-lg px-4 py-4 overflow-auto relative ${bgClass}`}>
 
        {loading ? (
-        <img src="./loader.gif" className="w-8 m-auto"/>
+        <img src="./loader.gif" className={`w-8 m-auto ${filterClass}`}/>
        ) : (
          <>
           <textarea
@@ -30,9 +33,7 @@ const ChatInput = ({ sendMessage, loading }) => {
           <img src="./send.png"
           onClick={handleSubmit}
           width={20}
-          alt="send button" className="absolute top-4
-          right-3 hover:cursor-pointer ease-in 
-          duration-100 hover:scale-125"/>
+          alt="send button" className={`absolute top-4 right-3 hover:cursor-pointer ease-in duration-100 hover:scale-125 ${filterClass}`}/>
          </>
        )}
     </div>

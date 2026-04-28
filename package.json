@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@formkit/auto-animate": "^1.0.0-beta.6",
+    "@react-oauth/google": "^0.13.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-query": "^3.39.3"
+    "react-query": "^3.39.3",
+    "react-router-dom": "^7.14.2"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",

@@ -1,58 +1,29 @@
-import { useState } from 'react'
-import ChatInput from './components/ChatInput'
-import Chatbody from './components/Chatbody'
-import { useMutation } from 'react-query'
-import { fetchResponse } from './api'
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import ChatUI from './components/ChatUI';
+import Login from './components/Login';
+import Signup from './components/Signup';
+import AdminDashboard from './components/AdminDashboard';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 
 function App() {
-
-  const [chat, setChat] = useState([]);
-
-  const mutation = useMutation({
-    mutationFn: () => {
-      return fetchResponse(chat);
-    },
-    onSuccess: (data) => setChat((prev) => [...prev, { sender: "ai", message: data.message.replace(/^\n\n/, "") },
-    ]),
-  });
-
-  const sendMessage = async (message) => {
-    await Promise.resolve(setChat((prev) => [...prev, message]))
-    mutation.mutate();
-  };
-
   return (
-    <div className="bg-[#101035] h-screen py-6 relative sm:px-16
-     px-12 text-white overflow-hidden 
-     flex flex-col justify-between align-middle">
-
-      {/* gradient */}
-      <div className="gradient-01 z-0 absolute"></div>
-      <div className="gradient-02 z-0 absolute "></div>
-      <div className="gradient-03 z-0 absolute "></div>
-      <div className="gradient-04 z-0 absolute "></div>
-
-      {/* header */}
-      <div className="uppercase font-bold font-size text-2xl text-center mb-3 head">
-        ChatSOL
-      </div>
-
-
-      {/* body */}
-      <div className="h-[90%] overflow-auto w-full max-w-4xl min-w-[20rem] py-8 px-4 self-center 
-      scrollbar-thumb-slate-400 scrollbar-thin scrollbar-track-gray-transparent scrollbar-thumb-border-rounded-md">
-        <Chatbody chat={chat} />
-      </div>
-
-
-
-      {/* input */}
-      <div className="w-full max-w-4xl min-w-[20rem] self-center">
-        <ChatInput sendMessage={sendMessage} loading={mutation.isLoading}/>
-      </div>
-
-    </div>
-  )
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route path="/chat" element={<ChatUI />} />
+      <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="*" element={
+        <div className="flex justify-center items-center h-screen bg-[#101035] text-white">
+          <h1 className="text-4xl">404 - Page Not Found</h1>
+        </div>
+      } />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
