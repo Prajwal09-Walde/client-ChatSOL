@@ -1,43 +1,54 @@
-import React, { useState } from "react";
+import React, { useState } from 'react'
 
-const ChatInput = ({ sendMessage, loading, theme }) => {
-
-  const [value, setValue] = useState("");
+const ChatInput = ({ sendMessage, loading, isDark }) => {
+  const [value, setValue] = useState('');
 
   const handleSubmit = () => {
-    if (value === "") return;
-    sendMessage({ sender: "user", message: value })
-    setValue("");
+    if (!value.trim()) return;
+    sendMessage({ sender: 'user', message: value.trim() });
+    setValue('');
   };
 
-  const bgClass = theme === 'light' ? 'bg-black/10' : 'bg-white/10';
-  const filterClass = theme === 'light' ? 'invert opacity-70' : '';
+  const D = isDark;
 
   return (
-    <div className={`w-full max-h-40 rounded-lg px-4 py-4 overflow-auto relative ${bgClass}`}>
-
-       {loading ? (
-        <img src="./loader.gif" className={`w-8 m-auto ${filterClass}`}/>
-       ) : (
-         <>
+    <div className={`flex items-end gap-2 rounded-xl px-4 py-3 border transition-colors duration-200
+                    ${D
+                      ? 'bg-white/5 border-violet-500/20 backdrop-blur-md focus-within:border-violet-500/50'
+                      : 'bg-white border-violet-300/40 shadow-sm focus-within:border-violet-500'}`}>
+      {loading ? (
+        <div className="w-full flex items-center justify-center py-1">
+          <div className="flex gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce [animation-delay:-0.3s]" />
+            <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce [animation-delay:-0.15s]" />
+            <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" />
+          </div>
+        </div>
+      ) : (
+        <>
           <textarea
-          onKeyDown={(e) => {
-          e.keyCode === 13 && e.shiftKey === false && handleSubmit();
-          }}
-          rows={1}
-          className="border-0 bg-transparent outline-none w-full pr-10 resize-none"
-          value={value}
-          type="text"
-          onChange={(e) => setValue(e.target.value)} />
- 
-          <img src="./send.png"
-          onClick={handleSubmit}
-          width={20}
-          alt="send button" className={`absolute top-4 right-3 hover:cursor-pointer ease-in duration-100 hover:scale-125 ${filterClass}`}/>
-         </>
-       )}
+            rows={1}
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+            placeholder="Type your message…"
+            className={`flex-1 bg-transparent text-sm resize-none focus:outline-none leading-relaxed max-h-36
+                        ${D ? 'text-slate-100 placeholder-slate-500' : 'text-slate-800 placeholder-slate-400'}`}
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={!value.trim()}
+            className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center
+                       shrink-0 mb-0.5 hover:from-violet-500 hover:to-indigo-500 transition-all duration-200
+                       disabled:opacity-30 disabled:cursor-not-allowed hover:scale-110 active:scale-95 shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+            </svg>
+          </button>
+        </>
+      )}
     </div>
   );
 };
 
-export default ChatInput
+export default ChatInput;

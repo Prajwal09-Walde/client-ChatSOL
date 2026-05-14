@@ -1,50 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ── Base reset ─────────────────────────────────────── */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Eudoxus Sans", sans-serif;
-    scroll-behavior: smooth;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
-.gradient-01 {
-    position: absolute;
-    width: 200px;
-    height: 238px;
-    top: 0;
-    background: #ffa500;
-    filter: blur(160px);
-}
+/* ── Gradient blobs ──────────────────────────────────── */
+.gradient-01 { position:absolute; width:260px; height:260px; top:0; left:0;    background:#7c3aed; filter:blur(160px); opacity:0.4; pointer-events:none; }
+.gradient-02 { position:absolute; width:240px; height:240px; top:-4rem; right:0;  background:#2563eb; filter:blur(170px); opacity:0.35; pointer-events:none; }
+.gradient-03 { position:absolute; width:240px; height:240px; bottom:5rem; left:0; background:#06b6d4; filter:blur(180px); opacity:0.25; pointer-events:none; }
+.gradient-04 { position:absolute; width:240px; height:240px; bottom:6rem; right:0;background:#4f46e5; filter:blur(190px); opacity:0.3; pointer-events:none; }
 
-.gradient-02 {
-    position: absolute;
-    width: 200px;
-    height: 238px;
-    top: -6rem;
-    right: 0px;
-    background: #06f306;
-    filter: blur(170px);
-}
-
-.gradient-03 {
-    position: absolute;
-    width: 200px;
-    height: 238px;
-    bottom: 5rem;
-    left: 0px;
-    background: #87cefa;
-    filter: blur(180px);
-}
-
-.gradient-04 {
-    position: absolute;
-    width: 200px;
-    height: 238px;
-    bottom: 6rem;
-    right: 0px;
-    background: #ffff00;
-    filter: blur(190px);
+/* ── Reusable component classes ──────────────────────── */
+@layer components {
+  .glass {
+    @apply backdrop-blur-md bg-white/5 border border-white/10;
+  }
+  .glass-light {
+    @apply backdrop-blur-md bg-white/80 border border-slate-200;
+  }
+  .input-field {
+    @apply w-full p-3 rounded-lg bg-black/30 border border-violet-500/20 text-white
+           placeholder-slate-400 focus:outline-none focus:border-violet-500/60 transition-colors duration-200;
+  }
+  .input-field-light {
+    @apply w-full p-3 rounded-lg bg-white border border-violet-300/50 text-slate-800
+           placeholder-slate-400 focus:outline-none focus:border-violet-500 transition-colors duration-200;
+  }
+  .btn-primary {
+    @apply bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
+           text-white font-semibold p-3 rounded-lg transition-all duration-200
+           shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 hover:scale-[1.02] active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply bg-white/10 hover:bg-white/20 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200;
+  }
 }
