@@ -20,21 +20,18 @@ const dateGroup = (iso) => {
 const GROUP_ORDER = ['Today','Yesterday','This Week','This Month','Older'];
 
 function ChatUI() {
-  const [chat, setChat]                 = useState([]);
-  const [user, setUser]                 = useState(null);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [nameInput, setNameInput]       = useState('');
+  const [chat, setChat]                   = useState([]);
+  const [user, setUser]                   = useState(null);
+  const [showSettings, setShowSettings]   = useState(false);
+  const [nameInput, setNameInput]         = useState('');
   const [passwordInput, setPasswordInput] = useState('');
-  const [settingsMsg, setSettingsMsg]   = useState('');
-  const [themeMode, setThemeMode]       = useState('system');
-  const [isDark, setIsDark]             = useState(true);
-  const [sidebarOpen, setSidebarOpen]   = useState(false);
-  const [history, setHistory]           = useState([]);
-  const [currentId, setCurrentId]       = useState(null);
-
-  const dropdownRef = useRef(null);
-  const navigate    = useNavigate();
+  const [settingsMsg, setSettingsMsg]     = useState('');
+  const [themeMode, setThemeMode]         = useState('system');
+  const [isDark, setIsDark]               = useState(true);
+  const [sidebarOpen, setSidebarOpen]     = useState(false);
+  const [history, setHistory]             = useState([]);
+  const [currentId, setCurrentId]         = useState(null);
+  const navigate = useNavigate();
 
   /* ── Bootstrap ─────────────────────────────────────── */
   useEffect(() => {
@@ -43,13 +40,12 @@ function ChatUI() {
     const u = localStorage.getItem('user');
     if (u) { const p = JSON.parse(u); setUser(p); setNameInput(p.name); }
     setHistory(JSON.parse(localStorage.getItem('chatHistory') || '[]'));
-    const saved = localStorage.getItem('themeMode') || 'system';
-    setThemeMode(saved);
-    // Only open sidebar by default on desktop
+    setThemeMode(localStorage.getItem('themeMode') || 'system');
+    // Open sidebar by default only on desktop
     setSidebarOpen(window.innerWidth >= 768);
   }, [navigate]);
 
-  /* ── Resolve theme ─────────────────────────────────── */
+  /* ── Theme ─────────────────────────────────────────── */
   useEffect(() => {
     localStorage.setItem('themeMode', themeMode);
     if (themeMode === 'dark')  { setIsDark(true);  return; }
@@ -60,16 +56,6 @@ function ChatUI() {
     mq.addEventListener('change', h);
     return () => mq.removeEventListener('change', h);
   }, [themeMode]);
-
-  /* ── Click-outside dropdown ────────────────────────── */
-  useEffect(() => {
-    const fn = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target))
-        setShowDropdown(false);
-    };
-    document.addEventListener('mousedown', fn);
-    return () => document.removeEventListener('mousedown', fn);
-  }, []);
 
   /* ── History helpers ───────────────────────────────── */
   const persistHistory = (updated) => {
@@ -111,7 +97,7 @@ function ChatUI() {
     mutationFn: () => fetchResponse(chat),
     onSuccess: (data) => {
       setChat(prev => {
-        const msg = data.message?.replace(/^\n\n/, '') || 'Too large for a task to generate';
+        const msg = data.message?.replace(/^\n\n/, '') || 'No response';
         const updated = [...prev, { sender: 'ai', message: msg }];
         if (currentId) saveChat(updated, currentId);
         return updated;
@@ -123,22 +109,18 @@ function ChatUI() {
   const sendMessage = async (message) => {
     let id = currentId;
     if (!id) { id = genId(); setCurrentId(id); }
-    setChat(prev => {
-      const updated = [...prev, message];
-      saveChat(updated, id);
-      return updated;
-    });
+    setChat(prev => { const updated = [...prev, message]; saveChat(updated, id); return updated; });
     await Promise.resolve();
     mutation.mutate();
   };
 
-  /* ── Settings save ─────────────────────────────────── */
+  /* ── Settings ──────────────────────────────────────── */
   const handleUpdateSettings = async (e) => {
     e.preventDefault(); setSettingsMsg('');
     try {
       const res  = await fetch(`${API_URL}/api/auth/update-settings`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
         body: JSON.stringify({ name: nameInput, password: passwordInput || undefined }),
       });
       const data = await res.json();
@@ -158,34 +140,38 @@ function ChatUI() {
   }, {});
 
   /* ── Theme tokens ──────────────────────────────────── */
-  const D = isDark;
-  const bg        = D ? '#0f0f1a' : '#f5f3ff';
-  const sbBg      = D ? '#0a0a18' : '#ffffff';
-  const sbBorder  = D ? 'border-white/5' : 'border-slate-200';
-  const hdrBorder = D ? 'border-white/5' : 'border-slate-200';
-  const hdrGlass  = D ? 'bg-white/5 backdrop-blur-md' : 'bg-white/90 backdrop-blur-md';
-  const txt       = D ? 'text-slate-100' : 'text-slate-900';
-  const muted     = D ? 'text-slate-400' : 'text-slate-500';
-  const hiItem    = (active) => active
+  const D          = isDark;
+  const bg         = D ? '#0f0f1a' : '#f5f3ff';
+  const sbBg       = D ? '#0a0a18' : '#ffffff';
+  const sbBorder   = D ? 'border-white/5'   : 'border-slate-200';
+  const hdrBorder  = D ? 'border-white/5'   : 'border-slate-200';
+  const hdrGlass   = D ? 'bg-white/5 backdrop-blur-md' : 'bg-white/90 backdrop-blur-md';
+  const txt        = D ? 'text-slate-100'   : 'text-slate-900';
+  const muted      = D ? 'text-slate-400'   : 'text-slate-500';
+  const inputCls   = D ? 'input-field'      : 'input-field-light';
+  const modalBg    = D ? '#13132b'          : '#ffffff';
+  const modalBorder = D ? 'border-violet-500/25' : 'border-slate-200';
+  const labelCls   = D ? 'text-slate-400'   : 'text-slate-600';
+  const hiItem     = (active) => active
     ? (D ? 'bg-violet-500/15 border border-violet-500/20' : 'bg-violet-100 border border-violet-200')
     : (D ? 'hover:bg-white/5' : 'hover:bg-violet-50');
-  const inputCls  = D ? 'input-field' : 'input-field-light';
-  const modalBg   = D ? '#13132b' : '#ffffff';
-  const modalBorder = D ? 'border-violet-500/25' : 'border-slate-200';
-  const labelCls  = D ? 'text-slate-400' : 'text-slate-600';
 
-  const suggestions = ['How does AI work?','Explain machine learning','Write a cover letter','Debug my React code'];
+  const suggestions = ['How does AI work?', 'Explain machine learning', 'Write a cover letter', 'Debug my React code'];
+
+  const SIDEBAR_W = 256; // px
 
   return (
-    /*
-      Key layout decisions for zoom stability:
-      - Use min-h-screen + flex flex-col instead of fixed h-[100dvh]
-        so the page can scroll vertically when zoomed in rather than clipping
-      - Sidebar uses fixed positioning on mobile (z-40) with overlay,
-        and relative on desktop. This avoids layout shifts during zoom.
-      - All text uses relative units (rem/em via Tailwind) so it scales with zoom.
-    */
-    <div className={`flex min-h-screen overflow-x-hidden ${txt}`} style={{ background: bg }}>
+    /**
+     * Layout strategy:
+     *  - Outer shell: h-[100dvh] overflow-hidden (locked to viewport, no page scroll)
+     *  - Sidebar: always `fixed`, uses translateX to slide in/out (zero layout reflow)
+     *  - Main: always full width. On desktop when sidebar open, add margin-left = sidebar width
+     *  - Chat body: flex-1 overflow-y-auto (only this area scrolls)
+     *  - Input bar: shrink-0, always visible at bottom
+     */
+    <div className={`relative flex h-[100dvh] overflow-hidden ${txt}`} style={{ background: bg }}>
+
+      {/* ── Gradient blobs (fixed so they don't scroll) ── */}
       {D && <>
         <div className="gradient-01 fixed z-0 pointer-events-none" />
         <div className="gradient-02 fixed z-0 pointer-events-none" />
@@ -193,29 +179,30 @@ function ChatUI() {
         <div className="gradient-04 fixed z-0 pointer-events-none" />
       </>}
 
-      {/* ── Mobile overlay backdrop ──────────────────── */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-30 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {/* ── Mobile backdrop ──────────────────────────── */}
+      <div
+        onClick={() => setSidebarOpen(false)}
+        className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 md:hidden
+                    ${sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+      />
 
-      {/* ── Sidebar ─────────────────────────────────── */}
+      {/* ── Sidebar (always fixed, slides via translateX) ─ */}
       <aside
-        className={`flex flex-col shrink-0 z-40 border-r ${sbBorder} transition-[width] duration-300 ease-in-out
-                    fixed md:sticky md:top-0 md:self-start h-screen
-                    ${sidebarOpen ? 'w-64' : 'w-0 overflow-hidden'}`}
-        style={{ background: sbBg }}>
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r ${sbBorder}
+                    transition-transform duration-300 ease-in-out`}
+        style={{
+          width: `${SIDEBAR_W}px`,
+          background: sbBg,
+          transform: sidebarOpen ? 'translateX(0)' : `translateX(-${SIDEBAR_W}px)`,
+        }}>
 
-        {/* Sidebar top */}
+        {/* Top */}
         <div className={`flex items-center justify-between px-4 py-4 border-b ${sbBorder} shrink-0`}>
-          <span className="font-extrabold text-base bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent truncate">
+          <span className="font-extrabold text-base bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
             ChatSOL
           </span>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className={`p-1.5 rounded-lg transition-colors shrink-0 ${D ? 'hover:bg-white/10 text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}>
+          <button onClick={() => setSidebarOpen(false)}
+            className={`p-1.5 rounded-lg transition-colors ${D ? 'hover:bg-white/10 text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}>
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -233,7 +220,7 @@ function ChatUI() {
           </button>
         </div>
 
-        {/* History list */}
+        {/* History */}
         <div className="flex-1 overflow-y-auto px-2 py-1">
           {history.length === 0
             ? <p className={`text-xs ${muted} text-center mt-8`}>No history yet</p>
@@ -246,8 +233,7 @@ function ChatUI() {
                                 ${hiItem(currentId === item.id)} ${D ? 'text-slate-300' : 'text-slate-700'}`}>
                     <div className="flex items-center gap-2 min-w-0">
                       <svg xmlns="http://www.w3.org/2000/svg" className={`w-3.5 h-3.5 shrink-0 ${muted}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                       </svg>
                       <span className="text-xs truncate">{item.title}</span>
                     </div>
@@ -265,7 +251,7 @@ function ChatUI() {
           }
         </div>
 
-        {/* Sidebar footer — user profile */}
+        {/* Footer */}
         <div className={`px-3 py-3 border-t ${sbBorder} shrink-0`}>
           <div onClick={() => setShowSettings(true)}
             className={`flex items-center gap-2 px-2 py-2 rounded-lg cursor-pointer transition-colors touch-manipulation ${D ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}>
@@ -282,23 +268,21 @@ function ChatUI() {
         </div>
       </aside>
 
-      {/* ── Main area ────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 relative z-10 h-screen overflow-hidden">
+      {/* ── Main area (always full-width; desktop shifts via margin) ── */}
+      <div
+        className="flex flex-col w-full min-w-0 relative z-10 transition-[margin] duration-300 ease-in-out"
+        style={{ marginLeft: sidebarOpen && window.innerWidth >= 768 ? `${SIDEBAR_W}px` : '0px' }}>
 
         {/* Header */}
         <header className={`flex items-center justify-between px-3 sm:px-4 py-3 border-b ${hdrBorder} ${hdrGlass} shrink-0`}>
-          {/* Hamburger */}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label="Toggle sidebar"
+          <button onClick={() => setSidebarOpen(s => !s)} aria-label="Toggle sidebar"
             className={`p-2 rounded-lg transition-colors touch-manipulation ${D ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-600'}`}>
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
 
-          {/* App title — visible on mobile */}
-          <span className="md:hidden text-sm font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+          <span className="text-sm font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
             ChatSOL
           </span>
 
@@ -316,40 +300,41 @@ function ChatUI() {
           </div>
         </header>
 
-        {/* Chat body — scrollable, fills remaining height */}
+        {/* Chat body — only scrollable region */}
         <div className="flex-1 overflow-y-auto overscroll-contain">
-          <div className="w-full max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
-            {chat.length === 0 ? (
-              <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 sm:gap-7">
-                <div className="text-center px-2">
-                  <h1 className={`text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight ${D ? 'text-white/90' : 'text-slate-800'}`}>
-                    How can I help you
-                    {user && <span className="bg-gradient-to-r from-violet-500 to-cyan-400 bg-clip-text text-transparent">, {user.name}</span>}?
-                  </h1>
-                  <p className={`mt-3 text-sm ${muted}`}>Start a conversation — ask me anything.</p>
-                </div>
-                <div className="flex flex-wrap justify-center gap-2 max-w-md px-2">
-                  {suggestions.map(s => (
-                    <button key={s} onClick={() => sendMessage({ sender: 'user', message: s })}
-                      className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm border transition-all duration-200 hover:scale-105 touch-manipulation
-                                  ${D ? 'border-violet-500/25 bg-violet-500/10 text-slate-300 hover:bg-violet-500/20 hover:border-violet-400/50'
-                                      : 'border-violet-300/50 bg-violet-50 text-violet-800 hover:bg-violet-100 hover:border-violet-400'}`}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
+          {chat.length === 0 ? (
+            // Welcome screen — vertically centered in available space
+            <div className="flex flex-col items-center justify-center min-h-full gap-5 sm:gap-7 px-4 py-8">
+              <div className="text-center">
+                <h1 className={`text-2xl xs:text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight ${D ? 'text-white/90' : 'text-slate-800'}`}>
+                  How can I help you
+                  {user && <span className="bg-gradient-to-r from-violet-500 to-cyan-400 bg-clip-text text-transparent">, {user.name}</span>}?
+                </h1>
+                <p className={`mt-2 sm:mt-3 text-sm ${muted}`}>Start a conversation — ask me anything.</p>
               </div>
-            ) : (
+              <div className="flex flex-wrap justify-center gap-2 w-full max-w-sm sm:max-w-md">
+                {suggestions.map(s => (
+                  <button key={s} onClick={() => sendMessage({ sender: 'user', message: s })}
+                    className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm border transition-all duration-200 hover:scale-105 touch-manipulation
+                                ${D ? 'border-violet-500/25 bg-violet-500/10 text-slate-300 hover:bg-violet-500/20 hover:border-violet-400/50'
+                                    : 'border-violet-300/50 bg-violet-50 text-violet-800 hover:bg-violet-100 hover:border-violet-400'}`}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="w-full max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
               <Chatbody chat={chat} isDark={isDark} />
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Input bar — pinned to bottom */}
-        <div className={`shrink-0 px-3 sm:px-6 py-3 sm:py-4 border-t ${hdrBorder} ${hdrGlass}`}>
+        {/* Input bar — pinned to bottom, never scrolls away */}
+        <div className={`shrink-0 px-3 sm:px-6 py-3 border-t ${hdrBorder} ${hdrGlass}`}>
           <div className="w-full max-w-3xl mx-auto">
             <ChatInput sendMessage={sendMessage} loading={mutation.isLoading} isDark={isDark} />
-            <p className={`text-center text-[10px] mt-2 ${muted}`}>
+            <p className={`text-center text-[10px] mt-1.5 ${muted}`}>
               AI can make mistakes. Consider checking important info.
             </p>
           </div>
@@ -358,23 +343,22 @@ function ChatUI() {
 
       {/* ── Settings Modal ─────────────────────────────── */}
       {showSettings && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex justify-center items-end sm:items-center backdrop-blur-sm p-0 sm:p-4">
-          <div className={`rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 w-full sm:max-w-md shadow-2xl border ${modalBorder} max-h-[90vh] overflow-y-auto`}
-               style={{ background: modalBg }}>
-            {/* Modal header */}
+        <div className="fixed inset-0 bg-black/70 z-50 flex justify-center items-end sm:items-center backdrop-blur-sm">
+          <div className={`w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 border ${modalBorder}
+                          shadow-2xl max-h-[90vh] overflow-y-auto`} style={{ background: modalBg }}>
+
             <div className="flex items-center justify-between mb-5">
-              <h2 className={`text-lg sm:text-xl font-bold ${D ? 'text-white' : 'text-slate-900'}`}>Settings</h2>
+              <h2 className={`text-lg font-bold ${D ? 'text-white' : 'text-slate-900'}`}>Settings</h2>
               <button onClick={() => setShowSettings(false)}
-                className={`p-1.5 rounded-lg transition-colors touch-manipulation ${D ? 'hover:bg-white/10 text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}>
+                className={`p-1.5 rounded-lg touch-manipulation ${D ? 'hover:bg-white/10 text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            {/* User info card */}
             <div className={`flex items-center gap-3 p-3 rounded-xl mb-5 ${D ? 'bg-white/5 border border-white/10' : 'bg-violet-50 border border-violet-100'}`}>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shrink-0 shadow-md">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
@@ -383,9 +367,7 @@ function ChatUI() {
                 <p className={`text-sm font-semibold truncate ${D ? 'text-slate-100' : 'text-slate-800'}`}>{user?.name}</p>
                 <p className={`text-xs truncate ${D ? 'text-slate-400' : 'text-slate-500'}`}>{user?.email}</p>
                 <span className={`inline-block mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full
-                  ${user?.role === 'admin'
-                    ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
-                    : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'}`}>
+                  ${user?.role === 'admin' ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'}`}>
                   {user?.role || 'user'}
                 </span>
               </div>
@@ -417,23 +399,17 @@ function ChatUI() {
               </div>
             </form>
 
-            {/* Logout section */}
             <div className={`mt-5 pt-4 border-t ${D ? 'border-white/10' : 'border-slate-200'}`}>
               <p className={`text-xs mb-3 ${D ? 'text-slate-500' : 'text-slate-400'}`}>
                 Signed in as <span className="font-medium">{user?.email}</span>
               </p>
               <button
-                onClick={() => {
-                  localStorage.removeItem('token');
-                  localStorage.removeItem('user');
-                  navigate('/login');
-                }}
+                onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/login'); }}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
                            bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400
-                           transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] touch-manipulation">
+                           transition-all duration-200 touch-manipulation">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
                 </svg>
                 Log out
               </button>
