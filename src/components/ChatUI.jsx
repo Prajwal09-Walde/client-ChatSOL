@@ -213,15 +213,15 @@ function ChatUI() {
 
         {/* Top */}
         <div className={`flex items-center justify-between px-4 py-4 border-b ${sbBorder} shrink-0`}>
-          <span className="font-extrabold text-base bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+          {/* <span className="font-extrabold text-base bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
             ChatSOL
-          </span>
-          <button onClick={() => setSidebarOpen(false)}
+          </span> */}
+          {/* <button onClick={() => setSidebarOpen(false)}
             className={`p-1.5 rounded-lg transition-colors ${D ? 'hover:bg-white/10 text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}>
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </button> */}
         </div>
 
         {/* New Chat */}
@@ -395,29 +395,20 @@ function ChatUI() {
             )}
 
             <form onSubmit={handleUpdateSettings} className="flex flex-col gap-4">
-              <div>
-                <label className={`block text-xs mb-1.5 font-medium ${labelCls}`}>Display Name</label>
-                <input type="text" value={nameInput} onChange={e => setNameInput(e.target.value)} className={inputCls} required />
-              </div>
-              <div>
-                <label className={`block text-xs mb-1.5 font-medium ${labelCls}`}>
-                  New Password <span className="opacity-50">(blank = keep current)</span>
-                </label>
-                <input type="password" value={passwordInput} onChange={e => setPasswordInput(e.target.value)} className={inputCls} minLength={6} placeholder="Min. 6 characters" />
-              </div>
+              
               <div className="flex justify-end gap-3 pt-1">
-                <button type="button" onClick={() => setShowSettings(false)}
+                {/* <button type="button" onClick={() => setShowSettings(false)}
                   className={D ? 'btn-ghost text-sm' : 'px-4 py-2 rounded-lg text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors'}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary px-5 py-2 text-sm">Save</button>
+                <button type="submit" className="btn-primary px-5 py-2 text-sm">Save</button> */}
               </div>
             </form>
 
             <div className={`mt-5 pt-4 border-t ${D ? 'border-white/10' : 'border-slate-200'}`}>
-              <p className={`text-xs mb-3 ${D ? 'text-slate-500' : 'text-slate-400'}`}>
+              {/* <p className={`text-xs mb-3 ${D ? 'text-slate-500' : 'text-slate-400'}`}>
                 Signed in as <span className="font-medium">{user?.email}</span>
-              </p>
+              </p> */}
               <button
                 onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/login'); }}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
