@@ -7,10 +7,13 @@ const Signup = () => {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
     try {
       const res  = await fetch(`${API_URL}/api/auth/signup`, {
         method:  'POST',
@@ -27,29 +30,30 @@ const Signup = () => {
       }
     } catch {
       setError('Failed to sign up. Server error.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center relative overflow-hidden text-white"
+    <div className="min-h-screen flex justify-center items-center relative overflow-hidden text-white px-4 py-8"
          style={{ background: '#0f0f1a' }}>
       <div className="gradient-03 absolute" />
       <div className="gradient-04 absolute" />
 
-      <div className="z-10 glass rounded-2xl shadow-2xl w-full max-w-md mx-4 sm:mx-0 p-8 border border-violet-500/20">
+      <div className="z-10 glass rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md p-6 sm:p-8 border border-violet-500/20">
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 to-cyan-400
-                         bg-clip-text text-transparent">
+        <div className="text-center mb-7">
+          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
             ChatSOL
           </h1>
           <p className="text-slate-400 text-sm mt-1">Your AI-powered assistant</p>
         </div>
 
-        <h2 className="text-xl font-semibold text-white text-center mb-6">Create an account</h2>
+        <h2 className="text-xl font-semibold text-white text-center mb-5">Create an account</h2>
 
         {error && (
-          <div className="bg-rose-500/20 border border-rose-500/40 text-rose-200 p-3 rounded-lg mb-5 text-sm text-center">
+          <div className="bg-rose-500/20 border border-rose-500/40 text-rose-200 p-3 rounded-lg mb-5 text-sm text-center break-words">
             {error}
           </div>
         )}
@@ -85,15 +89,16 @@ const Signup = () => {
               className="input-field"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              minLength={6}
               required
             />
           </div>
-          <button type="submit" className="btn-primary mt-1">
-            Create Account
+          <button type="submit" disabled={loading} className="btn-primary mt-1 disabled:opacity-60 disabled:cursor-not-allowed">
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-slate-400 mt-7">
+        <p className="text-center text-sm text-slate-400 mt-6">
           Already have an account?{' '}
           <Link to="/login" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">
             Sign in
