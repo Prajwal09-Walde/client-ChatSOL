@@ -31,6 +31,7 @@ function ChatUI() {
   const [sidebarOpen, setSidebarOpen]     = useState(false);
   const [history, setHistory]             = useState([]);
   const [currentId, setCurrentId]         = useState(null);
+  const [isMobile, setIsMobile]           = useState(true);
   const navigate = useNavigate();
 
   /* ── Bootstrap ─────────────────────────────────────── */
@@ -42,8 +43,22 @@ function ChatUI() {
     setHistory(JSON.parse(localStorage.getItem('chatHistory') || '[]'));
     setThemeMode(localStorage.getItem('themeMode') || 'system');
     // Open sidebar by default only on desktop
-    setSidebarOpen(window.innerWidth >= 768);
+    const mobile = window.innerWidth < 768;
+    setIsMobile(mobile);
+    setSidebarOpen(!mobile);
   }, [navigate]);
+
+  /* ── Track mobile/desktop on resize ───────────────── */
+  useEffect(() => {
+    const onResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile && !sidebarOpen) setSidebarOpen(true);
+      if (mobile && sidebarOpen)  setSidebarOpen(false);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [sidebarOpen]);
 
   /* ── Theme ─────────────────────────────────────────── */
   useEffect(() => {
@@ -271,7 +286,7 @@ function ChatUI() {
       {/* ── Main area (always full-width; desktop shifts via margin) ── */}
       <div
         className="flex flex-col w-full min-w-0 relative z-10 transition-[margin] duration-300 ease-in-out"
-        style={{ marginLeft: sidebarOpen && window.innerWidth >= 768 ? `${SIDEBAR_W}px` : '0px' }}>
+        style={{ marginLeft: sidebarOpen && !isMobile ? `${SIDEBAR_W}px` : '0px' }}>
 
         {/* Header */}
         <header className={`flex items-center justify-between px-3 sm:px-4 py-3 border-b ${hdrBorder} ${hdrGlass} shrink-0`}>
@@ -301,10 +316,10 @@ function ChatUI() {
         </header>
 
         {/* Chat body — only scrollable region */}
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex-1 overflow-y-auto overscroll-contain h-full">
           {chat.length === 0 ? (
             // Welcome screen — vertically centered in available space
-            <div className="flex flex-col items-center justify-center min-h-full gap-5 sm:gap-7 px-4 py-8">
+            <div className="flex flex-col items-center justify-center h-full gap-5 sm:gap-7 px-4 py-8">
               <div className="text-center">
                 <h1 className={`text-2xl xs:text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight ${D ? 'text-white/90' : 'text-slate-800'}`}>
                   How can I help you
