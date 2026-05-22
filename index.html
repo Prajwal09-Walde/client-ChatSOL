@@ -5,6 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
 
+    <script>
+      // Break out of domain-masked iframes to preserve native mobile responsiveness & viewport tags
+      if (window.self !== window.top) {
+        try {
+          window.top.location.replace(window.self.location.href);
+        } catch (e) {
+          console.warn("Iframe breakout blocked by browser security. Please configure proper DNS CNAME/A records instead of masked forwarding.");
+        }
+      }
+    </script>
+
     <!--import fonts for ChatSOL-->
     <link rel="preconnect" href="https://stijndv.com" />
     <link rel="stylesheet" href="https://stijndv.com/fonts/Eudoxus-Sans.css" />
