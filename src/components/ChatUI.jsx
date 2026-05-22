@@ -109,9 +109,12 @@ function ChatUI() {
 
   /* ── Mutation ──────────────────────────────────────── */
   const mutation = useMutation({
-    mutationFn: () => fetchResponse(chat),
+    mutationFn: (chatToSend) => fetchResponse(chatToSend),
     onSuccess: (data) => {
       setChat(prev => {
+        if (data.error) {
+          return [...prev, { sender: 'ai', message: `Server Error: ${data.error}` }];
+        }
         const msg = data.message?.replace(/^\n\n/, '') || 'No response';
         const updated = [...prev, { sender: 'ai', message: msg }];
         if (currentId) saveChat(updated, currentId);
@@ -124,9 +127,14 @@ function ChatUI() {
   const sendMessage = async (message) => {
     let id = currentId;
     if (!id) { id = genId(); setCurrentId(id); }
-    setChat(prev => { const updated = [...prev, message]; saveChat(updated, id); return updated; });
-    await Promise.resolve();
-    mutation.mutate();
+    
+    setChat(prev => {
+      const updated = [...prev, message];
+      saveChat(updated, id);
+      // Trigger mutation with the fresh updated array
+      mutation.mutate(updated);
+      return updated;
+    });
   };
 
   /* ── Settings ──────────────────────────────────────── */
