@@ -62,7 +62,7 @@ const Chatbody = ({ chat, isDark }) => {
                         .map((att, idx) => (
                           <div 
                             key={idx} 
-                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border text-xs font-semibold max-w-xs
+                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border text-xs font-semibold w-full max-w-full sm:max-w-xs
                                         ${isAI 
                                           ? (isDark ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800')
                                           : 'bg-white/10 border-white/10 text-white'}`}
