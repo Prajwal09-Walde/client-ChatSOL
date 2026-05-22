@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { API_URL } from '../config';
 
@@ -8,6 +8,24 @@ const Login = () => {
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          navigate(user.role === 'admin' ? '/admin' : '/chat', { replace: true });
+        } catch (e) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      } else {
+        navigate('/chat', { replace: true });
+      }
+    }
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -23,7 +41,7 @@ const Login = () => {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user',  JSON.stringify(data.user));
-        navigate(data.user.role === 'admin' ? '/admin' : '/chat');
+        navigate(data.user.role === 'admin' ? '/admin' : '/chat', { replace: true });
       } else {
         setError(data.error || data.message || 'Invalid credentials');
       }
