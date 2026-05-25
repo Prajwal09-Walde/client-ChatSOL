@@ -26,8 +26,12 @@ function ChatUI() {
   const [nameInput, setNameInput]         = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [settingsMsg, setSettingsMsg]     = useState('');
-  const [themeMode, setThemeMode]         = useState('system');
-  const [isDark, setIsDark]               = useState(true);
+  const [themeMode, setThemeMode]         = useState(() => {
+    const saved = localStorage.getItem('themeMode');
+    if (saved === 'light' || saved === 'dark') return saved;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  });
+  const [isDark, setIsDark]               = useState(themeMode === 'dark');
   const [sidebarOpen, setSidebarOpen]     = useState(false);
   const [history, setHistory]             = useState([]);
   const [currentId, setCurrentId]         = useState(null);
@@ -41,7 +45,13 @@ function ChatUI() {
     const u = localStorage.getItem('user');
     if (u) { const p = JSON.parse(u); setUser(p); setNameInput(p.name); }
     setHistory(JSON.parse(localStorage.getItem('chatHistory') || '[]'));
-    setThemeMode(localStorage.getItem('themeMode') || 'system');
+    const savedTheme = localStorage.getItem('themeMode');
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      setThemeMode(savedTheme);
+    } else {
+      const preferred = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      setThemeMode(preferred);
+    }
     // Open sidebar by default only on desktop
     const mobile = window.innerWidth < 768;
     setIsMobile(mobile);
@@ -63,13 +73,7 @@ function ChatUI() {
   /* ── Theme ─────────────────────────────────────────── */
   useEffect(() => {
     localStorage.setItem('themeMode', themeMode);
-    if (themeMode === 'dark')  { setIsDark(true);  return; }
-    if (themeMode === 'light') { setIsDark(false); return; }
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDark(mq.matches);
-    const h = (e) => setIsDark(e.matches);
-    mq.addEventListener('change', h);
-    return () => mq.removeEventListener('change', h);
+    setIsDark(themeMode === 'dark');
   }, [themeMode]);
 
   /* ── History helpers ───────────────────────────────── */
@@ -220,16 +224,16 @@ function ChatUI() {
         }}>
 
         {/* Top */}
-        <div className={`flex items-center justify-between px-4 py-4 border-b ${sbBorder} shrink-0`}>
-          {/* <span className="font-extrabold text-base bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+        <div className={`flex items-center justify-between px-4 py-3 border-b ${sbBorder} shrink-0`}>
+          <span className="font-extrabold text-base bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
             ChatSOL
-          </span> */}
-          {/* <button onClick={() => setSidebarOpen(false)}
-            className={`p-1.5 rounded-lg transition-colors ${D ? 'hover:bg-white/10 text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </span>
+          <button onClick={() => setSidebarOpen(false)} aria-label="Close sidebar"
+            className={`p-2 rounded-lg transition-colors duration-200 hover:scale-105 active:scale-95 touch-manipulation ${D ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-600'}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-          </button> */}
+          </button>
         </div>
 
         {/* New Chat */}
@@ -298,29 +302,40 @@ function ChatUI() {
 
         {/* Header */}
         <header className={`flex items-center justify-between px-3 sm:px-4 py-3 border-b ${hdrBorder} ${hdrGlass} shrink-0`}>
-          <button onClick={() => setSidebarOpen(s => !s)} aria-label="Toggle sidebar"
-            className={`p-2 rounded-lg transition-colors touch-manipulation ${D ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-600'}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          {!sidebarOpen ? (
+            <button onClick={() => setSidebarOpen(true)} aria-label="Open sidebar"
+              className={`p-2 rounded-lg transition-colors duration-200 hover:scale-105 active:scale-95 touch-manipulation ${D ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-600'}`}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          ) : (
+            <div className="w-9 h-9 sm:w-10 sm:h-10" />
+          )}
 
           <span className="text-sm font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
             ChatSOL
           </span>
 
-          {/* Theme switcher */}
-          <div className={`flex items-center p-1 rounded-lg ${D ? 'bg-white/5 border border-white/10' : 'bg-slate-100 border border-slate-200'}`}>
-            {[['light','☀️'],['system','⚙️'],['dark','🌙']].map(([m, icon]) => (
-              <button key={m} title={m} onClick={() => setThemeMode(m)}
-                className={`px-2 sm:px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-200 touch-manipulation
-                  ${themeMode === m
-                    ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm'
-                    : (D ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}>
-                {icon}
-              </button>
-            ))}
-          </div>
+          {/* Theme Toggle Switch */}
+          <button
+            onClick={() => setThemeMode(themeMode === 'dark' ? 'light' : 'dark')}
+            title={`Switch to ${themeMode === 'dark' ? 'light' : 'dark'} mode`}
+            className={`relative flex items-center justify-between w-14 h-8 rounded-full p-1 transition-all duration-300 focus:outline-none touch-manipulation
+                        ${D ? 'bg-violet-950/40 border border-violet-500/30' : 'bg-slate-200 border border-slate-300'}`}
+          >
+            {/* Background symbols for status */}
+            <span className={`text-xs absolute left-2 select-none pointer-events-none transition-opacity duration-200 ${D ? 'opacity-40' : 'opacity-0'}`}>☀️</span>
+            <span className={`text-xs absolute right-2 select-none pointer-events-none transition-opacity duration-200 ${D ? 'opacity-0' : 'opacity-40'}`}>🌙</span>
+
+            {/* Sliding circular indicator */}
+            <div
+              className={`w-6 h-6 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 flex items-center justify-center shadow-md transform transition-all duration-300 ease-in-out
+                          ${D ? 'translate-x-6' : 'translate-x-0'}`}
+            >
+              <span className="text-xs select-none">{D ? '🌙' : '☀️'}</span>
+            </div>
+          </button>
         </header>
 
         {/* Chat body — only scrollable region */}
