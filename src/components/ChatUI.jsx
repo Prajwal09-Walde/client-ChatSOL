@@ -36,6 +36,7 @@ function ChatUI() {
   const [history, setHistory]             = useState([]);
   const [currentId, setCurrentId]         = useState(null);
   const [isMobile, setIsMobile]           = useState(true);
+  const [expandedItems, setExpandedItems] = useState({});
   const navigate = useNavigate();
 
   /* ── Bootstrap ─────────────────────────────────────── */
@@ -104,6 +105,14 @@ function ChatUI() {
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
+  const handleHistoryClick = (item) => {
+    loadChat(item);
+    setExpandedItems(prev => ({
+      ...prev,
+      [item.id]: !prev[item.id]
+    }));
+  };
+
   const deleteItem = (e, id) => {
     e.stopPropagation();
     const updated = history.filter(h => h.id !== id);
@@ -113,30 +122,42 @@ function ChatUI() {
 
   /* ── Mutation ──────────────────────────────────────── */
   const mutation = useMutation({
-    mutationFn: (chatToSend) => fetchResponse(chatToSend),
-    onSuccess: (data) => {
-      setChat(prev => {
-        if (data.error) {
-          return [...prev, { sender: 'ai', message: `Server Error: ${data.error}` }];
-        }
-        const msg = data.message?.replace(/^\n\n/, '') || 'No response';
-        const updated = [...prev, { sender: 'ai', message: msg }];
-        if (currentId) saveChat(updated, currentId);
-        return updated;
-      });
+    mutationFn: ({ chatToSend }) => fetchResponse(chatToSend),
+    onSuccess: (data, { chatToSend, chatId }) => {
+      const msg = data.error ? `Server Error: ${data.error}` : (data.message?.replace(/^\n\n/, '') || 'No response');
+      const aiMessage = { sender: 'ai', message: msg };
+      
+      const updatedHistory = [...chatToSend, aiMessage];
+      saveChat(updatedHistory, chatId);
+
+      // Only update the active UI chat state if the user is still on this chat thread
+      if (!currentId || chatId === currentId) {
+        setChat(updatedHistory);
+      }
     },
-    onError: () => setChat(prev => [...prev, { sender: 'ai', message: 'Something went wrong. Please try again.' }]),
+    onError: (err, { chatToSend, chatId }) => {
+      const aiMessage = { sender: 'ai', message: 'Something went wrong. Please try again.' };
+      const updatedHistory = [...chatToSend, aiMessage];
+      saveChat(updatedHistory, chatId);
+      
+      if (!currentId || chatId === currentId) {
+        setChat(updatedHistory);
+      }
+    },
   });
 
   const sendMessage = async (message) => {
     let id = currentId;
-    if (!id) { id = genId(); setCurrentId(id); }
+    if (!id) { 
+      id = genId(); 
+      setCurrentId(id); 
+    }
     
     setChat(prev => {
       const updated = [...prev, message];
       saveChat(updated, id);
-      // Trigger mutation with the fresh updated array
-      mutation.mutate(updated);
+      // Trigger mutation with the updated array and the correct, persistent chat ID
+      mutation.mutate({ chatToSend: updated, chatId: id });
       return updated;
     });
   };
@@ -255,22 +276,66 @@ function ChatUI() {
               <div key={g} className="mb-3">
                 <p className={`text-[10px] font-semibold uppercase tracking-widest ${muted} px-3 py-1.5`}>{g}</p>
                 {grouped[g].map(item => (
-                  <div key={item.id} onClick={() => loadChat(item)}
-                    className={`group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors touch-manipulation
-                                ${hiItem(currentId === item.id)} ${D ? 'text-slate-300' : 'text-slate-700'}`}>
-                    <div className="flex items-center gap-2 min-w-0">
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`w-3.5 h-3.5 shrink-0 ${muted}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                      </svg>
-                      <span className="text-xs truncate">{item.title}</span>
+                  <div key={item.id} className="flex flex-col mb-1.5">
+                    {/* The Row */}
+                    <div onClick={() => handleHistoryClick(item)}
+                      className={`group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors touch-manipulation
+                                  ${hiItem(currentId === item.id)} ${D ? 'text-slate-300' : 'text-slate-700'}`}>
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        {/* Chevron/dropdown indicator */}
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${muted} ${expandedItems[item.id] ? 'rotate-90' : ''}`} 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+
+                        <svg xmlns="http://www.w3.org/2000/svg" className={`w-3.5 h-3.5 shrink-0 ${muted}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                        <span className="text-xs truncate">{item.title}</span>
+                      </div>
+                      
+                      <button onClick={(e) => deleteItem(e, item.id)}
+                        className={`shrink-0 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity
+                                    ${D ? 'hover:bg-white/10 text-slate-500 hover:text-rose-400' : 'text-slate-400 hover:text-rose-500'}`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
-                    <button onClick={(e) => deleteItem(e, item.id)}
-                      className={`shrink-0 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity
-                                  ${D ? 'hover:bg-white/10 text-slate-500 hover:text-rose-400' : 'text-slate-400 hover:text-rose-500'}`}>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+
+                    {/* Collapsible content showing message and response */}
+                    {expandedItems[item.id] && item.messages && item.messages.length > 0 && (
+                      <div className={`mt-1 ml-4 pl-3 border-l-2 ${D ? 'border-violet-500/25 bg-white/2' : 'border-violet-500/10 bg-slate-50'} flex flex-col gap-2 py-1.5 pr-1 max-h-48 overflow-y-auto`}>
+                        {item.messages.map((msg, idx) => {
+                          const isUser = msg.sender === 'user';
+                          return (
+                            <div key={idx} className="flex flex-col text-[10px] leading-relaxed select-none">
+                              <div className="flex items-center gap-1 font-bold mb-0.5">
+                                {isUser ? (
+                                  <>
+                                    <span className="text-cyan-400">👤</span>
+                                    <span className={D ? 'text-slate-300' : 'text-slate-700'}>You</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="text-violet-400">⚡</span>
+                                    <span className={D ? 'text-violet-300' : 'text-violet-700'}>ChatSOL</span>
+                                  </>
+                                )}
+                              </div>
+                              <p className={`pl-3 text-[10px] break-words line-clamp-2 ${D ? 'text-slate-400' : 'text-slate-500'}`} title={msg.message}>
+                                {msg.message || '(Attachment)'}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
