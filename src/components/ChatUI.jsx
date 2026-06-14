@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { useMutation } from 'react-query'
 import { useNavigate } from 'react-router-dom'
-import { fetchResponse } from '../api'
+import { fetchResponse, fetchResponseStream } from '../api'
 import { API_URL } from '../config'
 import ChatInput from './ChatInput'
 import Chatbody from './Chatbody'
@@ -37,7 +36,13 @@ function ChatUI() {
   const [currentId, setCurrentId]         = useState(null);
   const [isMobile, setIsMobile]           = useState(true);
   const [expandedItems, setExpandedItems] = useState({});
+  const [isLoading, setIsLoading]         = useState(false);
   const navigate = useNavigate();
+
+  const activeIdRef = useRef(currentId);
+  useEffect(() => {
+    activeIdRef.current = currentId;
+  }, [currentId]);
 
   /* ── Bootstrap ─────────────────────────────────────── */
   useEffect(() => {
@@ -120,32 +125,7 @@ function ChatUI() {
     if (currentId === id) { setChat([]); setCurrentId(null); }
   };
 
-  /* ── Mutation ──────────────────────────────────────── */
-  const mutation = useMutation({
-    mutationFn: ({ chatToSend }) => fetchResponse(chatToSend),
-    onSuccess: (data, { chatToSend, chatId }) => {
-      const msg = data.error ? `Server Error: ${data.error}` : (data.message?.replace(/^\n\n/, '') || 'No response');
-      const aiMessage = { sender: 'ai', message: msg };
-      
-      const updatedHistory = [...chatToSend, aiMessage];
-      saveChat(updatedHistory, chatId);
-
-      // Only update the active UI chat state if the user is still on this chat thread
-      if (!currentId || chatId === currentId) {
-        setChat(updatedHistory);
-      }
-    },
-    onError: (err, { chatToSend, chatId }) => {
-      const aiMessage = { sender: 'ai', message: 'Something went wrong. Please try again.' };
-      const updatedHistory = [...chatToSend, aiMessage];
-      saveChat(updatedHistory, chatId);
-      
-      if (!currentId || chatId === currentId) {
-        setChat(updatedHistory);
-      }
-    },
-  });
-
+  /* ── UX Response Streaming ─────────────────────────── */
   const sendMessage = async (message) => {
     let id = currentId;
     if (!id) { 
@@ -153,13 +133,51 @@ function ChatUI() {
       setCurrentId(id); 
     }
     
-    setChat(prev => {
-      const updated = [...prev, message];
-      saveChat(updated, id);
-      // Trigger mutation with the updated array and the correct, persistent chat ID
-      mutation.mutate({ chatToSend: updated, chatId: id });
-      return updated;
-    });
+    const updatedUserChat = [...chat, message];
+    setChat(updatedUserChat);
+    saveChat(updatedUserChat, id);
+
+    setIsLoading(true);
+
+    // Add placeholder for AI response
+    setChat(prev => [...prev, { sender: 'ai', message: '' }]);
+
+    let accumulatedText = '';
+    let hasError = false;
+
+    await fetchResponseStream(
+      updatedUserChat,
+      (chunk) => {
+        accumulatedText += chunk;
+        if (id === activeIdRef.current) {
+          setChat(prev => {
+            const newChat = [...prev];
+            if (newChat.length > 0 && newChat[newChat.length - 1].sender === 'ai') {
+              newChat[newChat.length - 1] = { sender: 'ai', message: accumulatedText };
+            }
+            return newChat;
+          });
+        }
+      },
+      (errorMsg) => {
+        hasError = true;
+        setIsLoading(false);
+        const finalChat = [...updatedUserChat, { sender: 'ai', message: `Something went wrong: ${errorMsg}` }];
+        saveChat(finalChat, id);
+        if (id === activeIdRef.current) {
+          setChat(finalChat);
+        }
+      }
+    );
+
+    if (!hasError) {
+      setIsLoading(false);
+      const finalChat = [...updatedUserChat, { sender: 'ai', message: accumulatedText }];
+      saveChat(finalChat, id);
+      if (id === activeIdRef.current) {
+        setChat(finalChat);
+      }
+    }
   };
 
   /* ── Settings ──────────────────────────────────────── */
@@ -433,10 +451,10 @@ function ChatUI() {
           )}
         </div>
 
-        {/* Input bar — pinned to bottom, never scrolls away */}
+         {/* Input bar — pinned to bottom, never scrolls away */}
         <div className={`shrink-0 px-3 sm:px-6 py-3 border-t ${hdrBorder} ${hdrGlass}`}>
           <div className="w-full max-w-3xl mx-auto">
-            <ChatInput sendMessage={sendMessage} loading={mutation.isLoading} isDark={isDark} />
+            <ChatInput sendMessage={sendMessage} loading={isLoading} isDark={isDark} />
             <p className={`text-center text-[10px] mt-1.5 ${muted}`}>
               AI can make mistakes. Consider checking important info.
             </p>
